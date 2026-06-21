@@ -101,6 +101,10 @@
   const statusCategoria  = document.getElementById("status-categoria");
   const campoData        = document.getElementById("campo-data");
   const statusLancamento = document.getElementById("status-lancamento");
+  const graficoCategorias = document.getElementById("grafico-categorias");
+  const graficoTotal     = document.getElementById("grafico-total");
+  const donutSegmentos   = document.getElementById("donut-segmentos");
+  const ranking          = document.getElementById("ranking");
   const lista            = document.getElementById("lista");
   const estadoVazio      = document.getElementById("estado-vazio");
   const botoesTipo       = document.querySelectorAll(".tipo-botao");
@@ -358,6 +362,80 @@
     }
   }
 
+  // agrupa despesas por categoria -> gráfico de pizza + ranking
+  function renderGraficoCategorias(transacoes) {
+    const SVG = "http://www.w3.org/2000/svg";
+    const mapa = new Map();
+    let totalDespesas = 0;
+
+    for (const t of transacoes) {
+      if (t.kind !== "expense") continue;
+      totalDespesas += t.amount_cents;
+      const cat = t.categoria;
+      const chave = cat ? "cat:" + cat.name : "sem";
+      const grupo = mapa.get(chave) || {
+        nome: cat ? cat.name : "Sem categoria",
+        cor: cat && cat.color ? cat.color : "#828282",
+        icone: cat && cat.icon ? cat.icon : "🏷️",
+        total: 0,
+      };
+      grupo.total += t.amount_cents;
+      mapa.set(chave, grupo);
+    }
+
+    const grupos = Array.from(mapa.values()).sort(function (a, b) { return b.total - a.total; });
+
+    graficoCategorias.hidden = grupos.length === 0;
+    if (grupos.length === 0) return;
+
+    graficoTotal.textContent = "R$ " + formatarReais(totalDespesas);
+
+    // donut: cada fatia é um arco proporcional (circunferência ≈ 100)
+    donutSegmentos.innerHTML = "";
+    let offset = 25; // começa no topo (12h)
+    for (const g of grupos) {
+      const pct = totalDespesas > 0 ? (g.total / totalDespesas) * 100 : 0;
+      const arco = document.createElementNS(SVG, "circle");
+      arco.setAttribute("cx", "21");
+      arco.setAttribute("cy", "21");
+      arco.setAttribute("r", "15.915");
+      arco.setAttribute("fill", "none");
+      arco.setAttribute("stroke-width", "5");
+      arco.setAttribute("stroke", g.cor);
+      arco.setAttribute("stroke-dasharray", pct.toFixed(2) + " " + (100 - pct).toFixed(2));
+      arco.setAttribute("stroke-dashoffset", offset.toFixed(2));
+      donutSegmentos.appendChild(arco);
+      offset -= pct; // a próxima fatia começa onde esta terminou
+    }
+
+    // ranking: maior gasto primeiro, com valor, % e barra
+    ranking.innerHTML = "";
+    for (const g of grupos) {
+      const pct = totalDespesas > 0 ? Math.round((g.total / totalDespesas) * 100) : 0;
+      const li = document.createElement("li");
+      li.className = "rank-item";
+      li.innerHTML =
+        '<span class="item-icone"></span>' +
+        '<div class="rank-info">' +
+          '<div class="rank-topo">' +
+            '<span class="rank-nome"></span>' +
+            '<span class="rank-valor"></span>' +
+          '</div>' +
+          '<div class="rank-barra"><span class="rank-preenche"></span></div>' +
+        '</div>';
+
+      const icone = li.querySelector(".item-icone");
+      icone.textContent = g.icone;
+      icone.style.background = g.cor + "22";
+      li.querySelector(".rank-nome").textContent = g.nome;
+      li.querySelector(".rank-valor").textContent = "R$ " + formatarReais(g.total) + " · " + pct + "%";
+      const preenche = li.querySelector(".rank-preenche");
+      preenche.style.width = pct + "%";
+      preenche.style.background = g.cor;
+      ranking.appendChild(li);
+    }
+  }
+
   async function carregarLancamentos() {
     const { data, error } = await cliente
       .from("transactions")
@@ -370,6 +448,7 @@
       return;
     }
     renderizar(data || []);
+    renderGraficoCategorias(data || []);
   }
 
   async function apagarLancamento(id) {

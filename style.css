@@ -472,6 +472,107 @@ button {
 .status-lancamento[data-tipo="ok"]   { color: var(--green); }
 
 /* ---------------------------------------------------------------
+   Gráfico de pizza + ranking de categorias
+   --------------------------------------------------------------- */
+.grafico-card {
+  background: var(--branco);
+  border-radius: var(--r);
+  margin: 0 16px 16px;
+  padding: 18px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.07);
+}
+
+.grafico-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.grafico-cabecalho .lista-titulo { margin: 0; }
+
+.grafico-total {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--brick);
+  white-space: nowrap;
+}
+
+.grafico-conteudo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.donut {
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+}
+
+.donut-base { stroke: var(--linha); }
+
+.ranking {
+  width: 100%;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rank-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rank-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rank-topo {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rank-nome {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.rank-valor {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.rank-barra {
+  height: 6px;
+  background: var(--linha);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.rank-preenche {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
+
+/* ---------------------------------------------------------------
    Lista de lançamentos — cartão branco
    --------------------------------------------------------------- */
 .lista-lancamentos {

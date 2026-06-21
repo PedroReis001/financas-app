@@ -167,6 +167,20 @@
       <p id="status-lancamento" class="status-lancamento" role="status" aria-live="polite"></p>
     </form>
 
+    <section id="grafico-categorias" class="grafico-card" hidden>
+      <div class="grafico-cabecalho">
+        <h2 class="lista-titulo">Despesas por categoria</h2>
+        <span id="grafico-total" class="grafico-total"></span>
+      </div>
+      <div class="grafico-conteudo">
+        <svg class="donut" viewBox="0 0 42 42" aria-hidden="true">
+          <circle class="donut-base" cx="21" cy="21" r="15.915" fill="none" stroke-width="5"></circle>
+          <g id="donut-segmentos"></g>
+        </svg>
+        <ul id="ranking" class="ranking"></ul>
+      </div>
+    </section>
+
     <section class="lista-lancamentos">
       <h2 class="lista-titulo">Lançamentos</h2>
       <ul id="lista" class="lista"></ul>
