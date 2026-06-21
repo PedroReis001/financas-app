@@ -96,6 +96,9 @@
   const novaCatCor       = document.getElementById("nova-cat-cor");
   const botaoCriarCat    = document.getElementById("criar-categoria");
   const botaoCancelarCat = document.getElementById("cancelar-categoria");
+  const abrirCategoriasBtn = document.getElementById("abrir-categorias");
+  const listaCategorias  = document.getElementById("lista-categorias");
+  const statusCategoria  = document.getElementById("status-categoria");
   const campoData        = document.getElementById("campo-data");
   const statusLancamento = document.getElementById("status-lancamento");
   const lista            = document.getElementById("lista");
@@ -105,6 +108,7 @@
   let tipoSelecionado = "expense";
   let categorias = [];
   let emojiSelecionado = "🏷️";
+  let categoriaEditando = null; // null = criando; id = editando essa categoria
 
   // Categorias padrão criadas na primeira vez (ícone = emoji, sem CDN).
   const CATEGORIAS_PADRAO = [
@@ -171,48 +175,129 @@
       opt.textContent = (c.icon ? c.icon + " " : "") + c.name;
       campoCategoria.appendChild(opt);
     }
-    // opção especial no fim: abre o mini-formulário de criação
+    // opção especial no fim: abre o painel de categorias em modo de criação
     const optNova = document.createElement("option");
     optNova.value = "__nova__";
     optNova.textContent = "➕ Nova categoria…";
     campoCategoria.appendChild(optNova);
+  }
 
-    novaCategoria.hidden = true; // some ao trocar de tipo/recarregar
+  function definirStatusCategoria(texto, tipo) {
+    statusCategoria.textContent = texto || "";
+    if (tipo) statusCategoria.setAttribute("data-tipo", tipo);
+    else statusCategoria.removeAttribute("data-tipo");
+  }
+
+  // deixa o editor pronto para CRIAR uma nova categoria
+  function resetarEditorCategoria() {
+    categoriaEditando = null;
+    novaCatNome.value = "";
+    emojiSelecionado = "🏷️";
+    emojiBotoes.forEach(function (b) { b.classList.remove("emoji-ativo"); });
+    novaCatCor.value = "#6B33E0";
+    botaoCriarCat.textContent = "Adicionar categoria";
+    definirStatusCategoria("", null);
+  }
+
+  function abrirPainelCategorias() {
+    if (campoCategoria.value === "__nova__") campoCategoria.selectedIndex = 0;
+    resetarEditorCategoria();
+    renderCategorias();
+    novaCategoria.hidden = false;
+    novaCatNome.focus();
   }
 
   function esconderNovaCategoria() {
     novaCategoria.hidden = true;
+    resetarEditorCategoria();
     if (campoCategoria.value === "__nova__") campoCategoria.selectedIndex = 0;
   }
 
-  async function criarCategoria() {
+  // lista as categorias com botões de editar e apagar
+  function renderCategorias() {
+    listaCategorias.innerHTML = "";
+    for (const c of categorias) {
+      const li = document.createElement("li");
+      li.className = "item";
+      li.innerHTML =
+        '<span class="item-icone"></span>' +
+        '<div class="item-info">' +
+          '<div class="item-descricao"></div>' +
+          '<div class="item-data"></div>' +
+        '</div>' +
+        '<button class="item-editar" type="button" aria-label="Editar categoria">✎</button>' +
+        '<button class="item-apagar" type="button" aria-label="Apagar categoria">×</button>';
+
+      const iconeEl = li.querySelector(".item-icone");
+      iconeEl.textContent = c.icon || "🏷️";
+      if (c.color) iconeEl.style.background = c.color + "22";
+      li.querySelector(".item-descricao").textContent = c.name;
+      li.querySelector(".item-data").textContent = c.kind === "income" ? "Entrada" : "Gasto";
+      li.querySelector(".item-editar").addEventListener("click", function () { editarCategoria(c); });
+      li.querySelector(".item-apagar").addEventListener("click", function () { apagarCategoria(c); });
+      listaCategorias.appendChild(li);
+    }
+  }
+
+  // carrega uma categoria existente no editor
+  function editarCategoria(c) {
+    categoriaEditando = c.id;
+    novaCatNome.value = c.name;
+    emojiSelecionado = c.icon || "🏷️";
+    emojiBotoes.forEach(function (b) { b.classList.toggle("emoji-ativo", b.dataset.emoji === emojiSelecionado); });
+    novaCatCor.value = /^#[0-9a-fA-F]{6}$/.test(c.color || "") ? c.color : "#6B33E0";
+    botaoCriarCat.textContent = "Salvar alterações";
+    definirStatusCategoria('Editando "' + c.name + '"', null);
+    novaCatNome.focus();
+  }
+
+  // cria (insert) ou salva edição (update), conforme o estado
+  async function salvarCategoria() {
     const nome = novaCatNome.value.trim();
     if (!nome) {
-      definirStatusLancamento("Dê um nome à categoria.", "erro");
+      definirStatusCategoria("Dê um nome à categoria.", "erro");
       return;
     }
     const cor = novaCatCor.value || "#6B33E0";
 
-    definirStatusLancamento("Criando categoria...", null);
-    // a categoria nasce com o tipo atual (Gasto/Entrada)
-    const { data, error } = await cliente
-      .from("categories")
-      .insert({ name: nome, kind: tipoSelecionado, color: cor, icon: emojiSelecionado })
-      .select()
-      .single();
+    let error;
+    if (categoriaEditando) {
+      definirStatusCategoria("Salvando...", null);
+      // o tipo (kind) não muda na edição — só nome, cor e ícone
+      ({ error } = await cliente
+        .from("categories")
+        .update({ name: nome, color: cor, icon: emojiSelecionado })
+        .eq("id", categoriaEditando));
+    } else {
+      definirStatusCategoria("Criando...", null);
+      // a nova categoria nasce com o tipo atual do formulário (Gasto/Entrada)
+      ({ error } = await cliente
+        .from("categories")
+        .insert({ name: nome, kind: tipoSelecionado, color: cor, icon: emojiSelecionado }));
+    }
 
     if (error) {
-      definirStatusLancamento("Erro ao criar categoria: " + error.message, "erro");
+      definirStatusCategoria("Erro: " + error.message, "erro");
       return;
     }
 
-    novaCatNome.value = "";
-    emojiSelecionado = "🏷️";
-    emojiBotoes.forEach(function (b) { b.classList.remove("emoji-ativo"); });
-    novaCategoria.hidden = true;
-    await carregarCategorias();          // recarrega e repopula o seletor
-    if (data) campoCategoria.value = data.id; // já deixa a nova selecionada
-    definirStatusLancamento("", null);
+    await carregarCategorias();  // repopula o seletor
+    renderCategorias();          // atualiza a lista do painel
+    carregarLancamentos();       // ícone/nome podem ter mudado na lista
+    resetarEditorCategoria();    // pronto para a próxima (painel continua aberto)
+  }
+
+  async function apagarCategoria(c) {
+    if (!confirm('Apagar a categoria "' + c.name + '"? Os lançamentos dela ficam sem categoria.')) return;
+    const { error } = await cliente.from("categories").delete().eq("id", c.id);
+    if (error) {
+      definirStatusCategoria("Erro ao apagar: " + error.message, "erro");
+      return;
+    }
+    if (categoriaEditando === c.id) resetarEditorCategoria();
+    await carregarCategorias();
+    renderCategorias();
+    carregarLancamentos();       // os lançamentos dessa categoria ficaram sem ela
   }
 
   // =====================================================================
@@ -305,12 +390,13 @@
     });
   });
 
-  // abre o mini-formulário quando escolhe "Nova categoria…"
+  // "➕ Nova categoria…" no seletor abre o painel em modo de criação
   campoCategoria.addEventListener("change", function () {
-    const querCriar = campoCategoria.value === "__nova__";
-    novaCategoria.hidden = !querCriar;
-    if (querCriar) novaCatNome.focus();
+    if (campoCategoria.value === "__nova__") abrirPainelCategorias();
   });
+
+  // botão "Gerenciar categorias" abre o mesmo painel
+  abrirCategoriasBtn.addEventListener("click", abrirPainelCategorias);
 
   // seleção do emoji por toque
   emojiBotoes.forEach(function (botao) {
@@ -320,7 +406,7 @@
     });
   });
 
-  botaoCriarCat.addEventListener("click", criarCategoria);
+  botaoCriarCat.addEventListener("click", salvarCategoria);
   botaoCancelarCat.addEventListener("click", esconderNovaCategoria);
 
   formLancamento.addEventListener("submit", async function (ev) {

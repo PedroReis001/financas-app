@@ -422,6 +422,35 @@ button {
   background: var(--roxo-claro);
 }
 
+/* link/botão de texto roxo (ex.: "Gerenciar categorias") */
+.botao-link {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--roxo);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 6px 2px;
+}
+
+/* lista de categorias dentro do painel de gerenciamento */
+.cats {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.item-editar {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1;
+  padding: 8px;
+  min-height: 44px;
+  min-width: 44px;
+}
+
 .nova-cat-cor {
   flex: 0 0 52px;
   width: 52px;

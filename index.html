@@ -83,6 +83,7 @@
         <input id="campo-descricao" class="campo-descricao" placeholder="Descrição" autocomplete="off">
       </div>
       <select id="campo-categoria" class="campo-categoria" aria-label="Categoria"></select>
+      <button type="button" id="abrir-categorias" class="botao-link">Gerenciar categorias</button>
 
       <div id="nova-categoria" class="nova-categoria" hidden>
         <div class="emoji-grid" role="group" aria-label="Escolha um ícone">
@@ -152,9 +153,11 @@
           <input id="nova-cat-cor" class="nova-cat-cor" type="color" value="#6B33E0" aria-label="Cor da categoria">
         </div>
         <div class="form-linha">
-          <button type="button" id="cancelar-categoria" class="botao-secundario">Cancelar</button>
-          <button type="button" id="criar-categoria" class="botao-adicionar">Criar categoria</button>
+          <button type="button" id="cancelar-categoria" class="botao-secundario">Fechar</button>
+          <button type="button" id="criar-categoria" class="botao-adicionar">Adicionar categoria</button>
         </div>
+        <p id="status-categoria" class="status-lancamento" role="status" aria-live="polite"></p>
+        <ul id="lista-categorias" class="cats"></ul>
       </div>
 
       <div class="form-linha">
