@@ -30,7 +30,8 @@ try {
 
   const cliente = window.supabase.createClient(
     window.APP_CONFIG.SUPABASE_URL,
-    window.APP_CONFIG.SUPABASE_ANON_KEY
+    window.APP_CONFIG.SUPABASE_ANON_KEY,
+    { auth: { detectSessionInUrl: true } }
   );
 
   const telaLogin   = document.getElementById("tela-login");
@@ -61,8 +62,13 @@ try {
   });
 
   botaoSair.addEventListener("click", function () { cliente.auth.signOut(); });
-  cliente.auth.onAuthStateChange(function (_e, s) { mostrarTela(s); });
-  cliente.auth.getSession().then(function (r) { mostrarTela(r.data.session); });
+
+  // onAuthStateChange já cobre tanto o retorno do magic link (SIGNED_IN)
+  // quanto sessões existentes (INITIAL_SESSION) — getSession() separado não é necessário
+  cliente.auth.onAuthStateChange(function (evento, s) {
+    mostrarBanner("AUTH: " + evento + " | sessão: " + (s ? "sim" : "não"), s ? "#2F5D3A" : "#8C3B2E");
+    mostrarTela(s);
+  });
 
   mostrarBanner("OK: app carregou e o botão está ligado.", "#2F5D3A");
 } catch (err) {
