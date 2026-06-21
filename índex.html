@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Minhas Finanças</title>
+
+  <!-- PWA: instalação no iOS exige manifest + apple-touch-icon + meta tags abaixo -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1C1B19">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===================== TELA DE LOGIN ===================== -->
+  <main id="tela-login" class="tela" hidden>
+    <div class="cartao-login">
+      <div class="marca">
+        <span class="marca-cifra">R$</span>
+        <span class="marca-nome">Minhas Finanças</span>
+      </div>
+
+      <form id="form-login" class="form-login">
+        <label for="email">Seu e-mail</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="voce@email.com"
+          autocomplete="email"
+          required
+        >
+        <button type="submit">Enviar link de acesso</button>
+      </form>
+
+      <p id="status-login" class="status-login" role="status" aria-live="polite"></p>
+    </div>
+  </main>
+
+  <!-- ===================== APP PRINCIPAL ===================== -->
+  <main id="tela-app" class="tela" hidden>
+    <header class="cabecalho">
+      <div class="cabecalho-topo">
+        <span class="marca-cifra-pequena">R$</span>
+        <button id="botao-sair" class="botao-texto">Sair</button>
+      </div>
+      <div class="saldo">
+        <span class="saldo-rotulo">Saldo do mês</span>
+        <span id="saldo-valor" class="saldo-valor">R$ 0,00</span>
+      </div>
+    </header>
+
+    <section class="lista-lancamentos">
+      <div class="estado-vazio">
+        <p class="estado-vazio-titulo">Nenhum lançamento ainda</p>
+        <p class="estado-vazio-texto">Os lançamentos entram na próxima etapa.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Configuração do projeto Supabase (URL + chave anônima) -->
+  <script src="config.js"></script>
+  <!-- Cliente Supabase (UMD via CDN, sem precisar de npm/build) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js');
+      });
+    }
+  </script>
+</body>
+</html>
