@@ -89,6 +89,7 @@
   const formLancamento   = document.getElementById("form-lancamento");
   const campoValor       = document.getElementById("campo-valor");
   const campoDescricao   = document.getElementById("campo-descricao");
+  const campoCategoria   = document.getElementById("campo-categoria");
   const campoData        = document.getElementById("campo-data");
   const statusLancamento = document.getElementById("status-lancamento");
   const lista            = document.getElementById("lista");
@@ -96,6 +97,19 @@
   const botoesTipo       = document.querySelectorAll(".tipo-botao");
 
   let tipoSelecionado = "expense";
+  let categorias = [];
+
+  // Categorias padrão criadas na primeira vez (ícone = emoji, sem CDN).
+  const CATEGORIAS_PADRAO = [
+    { name: "Moradia",     kind: "expense", color: "#6B33E0", icon: "🏠" },
+    { name: "Alimentação", kind: "expense", color: "#E2557B", icon: "🍔" },
+    { name: "Transporte",  kind: "expense", color: "#2F80ED", icon: "🚗" },
+    { name: "Saúde",       kind: "expense", color: "#27AE60", icon: "💊" },
+    { name: "Lazer",       kind: "expense", color: "#F2994A", icon: "🎮" },
+    { name: "Outros",      kind: "expense", color: "#828282", icon: "📦" },
+    { name: "Salário",     kind: "income",  color: "#27AE60", icon: "💰" },
+    { name: "Renda extra", kind: "income",  color: "#6B33E0", icon: "➕" },
+  ];
 
   function definirStatusLancamento(texto, tipo) {
     statusLancamento.textContent = texto || "";
@@ -112,7 +126,43 @@
     telaApp.hidden = !logado;
     if (logado) {
       campoData.value = hojeLocal();
+      carregarCategorias();
       carregarLancamentos();
+    }
+  }
+
+  // =====================================================================
+  // Categorias
+  // =====================================================================
+  async function carregarCategorias() {
+    let { data, error } = await cliente.from("categories").select("*").order("name");
+    if (error) {
+      definirStatusLancamento("Erro ao carregar categorias: " + error.message, "erro");
+      return;
+    }
+    // primeira vez: cria as categorias padrão e recarrega
+    if (!data || data.length === 0) {
+      const { error: erroInsert } = await cliente.from("categories").insert(CATEGORIAS_PADRAO);
+      if (erroInsert) {
+        definirStatusLancamento("Erro ao criar categorias: " + erroInsert.message, "erro");
+        return;
+      }
+      const recarga = await cliente.from("categories").select("*").order("name");
+      data = recarga.data;
+    }
+    categorias = data || [];
+    popularCategorias();
+  }
+
+  // preenche o seletor só com categorias do tipo escolhido (Gasto/Entrada)
+  function popularCategorias() {
+    campoCategoria.innerHTML = "";
+    const doTipo = categorias.filter(function (c) { return c.kind === tipoSelecionado; });
+    for (const c of doTipo) {
+      const opt = document.createElement("option");
+      opt.value = c.id;
+      opt.textContent = (c.icon ? c.icon + " " : "") + c.name;
+      campoCategoria.appendChild(opt);
     }
   }
 
@@ -136,12 +186,11 @@
 
     for (const t of transacoes) {
       const entrada = t.kind === "income";
+      const cat = t.categoria; // objeto embutido (ou null)
       const li = document.createElement("li");
       li.className = "item";
       li.innerHTML =
-        '<span class="item-icone ' + (entrada ? "entrada" : "saida") + '">' +
-          (entrada ? "↓" : "↑") +
-        '</span>' +
+        '<span class="item-icone ' + (entrada ? "entrada" : "saida") + '"></span>' +
         '<div class="item-info">' +
           '<div class="item-descricao"></div>' +
           '<div class="item-data"></div>' +
@@ -150,9 +199,24 @@
           (entrada ? "+" : "−") + formatarReais(t.amount_cents) +
         '</span>' +
         '<button class="item-apagar" type="button" aria-label="Apagar lançamento">×</button>';
-      // textContent (não innerHTML) na descrição: evita injeção de HTML
-      li.querySelector(".item-descricao").textContent = t.description || "(sem descrição)";
-      li.querySelector(".item-data").textContent = formatarData(t.occurred_on);
+
+      // ícone: emoji da categoria sobre fundo na cor dela; senão, seta padrão.
+      // textContent/style por propriedade evitam injeção (cor/ícone vêm do banco).
+      const iconeEl = li.querySelector(".item-icone");
+      if (cat && cat.icon) {
+        iconeEl.textContent = cat.icon;
+        if (cat.color) iconeEl.style.background = cat.color + "22"; // ~13% de opacidade
+      } else {
+        iconeEl.textContent = entrada ? "↓" : "↑";
+      }
+
+      // título: descrição (ou nome da categoria); subtítulo: categoria · data
+      const temDescricao = Boolean(t.description);
+      li.querySelector(".item-descricao").textContent =
+        temDescricao ? t.description : (cat ? cat.name : "(sem descrição)");
+      li.querySelector(".item-data").textContent =
+        (temDescricao && cat ? cat.name + " · " : "") + formatarData(t.occurred_on);
+
       li.querySelector(".item-apagar").addEventListener("click", function () {
         apagarLancamento(t.id);
       });
@@ -163,7 +227,7 @@
   async function carregarLancamentos() {
     const { data, error } = await cliente
       .from("transactions")
-      .select("*")
+      .select("*, categoria:categories(name, color, icon)")
       .order("occurred_on", { ascending: false })
       .order("created_at", { ascending: false });
 
@@ -188,6 +252,7 @@
     botao.addEventListener("click", function () {
       tipoSelecionado = botao.dataset.kind;
       botoesTipo.forEach(function (b) { b.classList.toggle("tipo-ativo", b === botao); });
+      popularCategorias(); // troca as opções para as do tipo escolhido
     });
   });
 
@@ -206,6 +271,7 @@
       kind: tipoSelecionado,
       amount_cents: centavos,
       description: campoDescricao.value.trim() || null,
+      category_id: campoCategoria.value || null,
       occurred_on: campoData.value || hojeLocal(),
     });
 
