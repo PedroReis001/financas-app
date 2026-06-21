@@ -318,6 +318,8 @@ button {
   border: 1px solid var(--linha);
   background: var(--branco);
   border-radius: 10px;
+  min-width: 0;   /* permite encolher dentro do flex (senão o input estoura a largura) */
+  width: 100%;
 }
 
 .campo-valor {
