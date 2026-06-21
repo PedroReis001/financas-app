@@ -160,7 +160,8 @@ button {
 .cabecalho {
   background: var(--roxo);
   color: #fff;
-  padding: 20px 20px 48px;
+  /* respeita o entalhe (notch) no topo do iPhone */
+  padding: calc(20px + env(safe-area-inset-top)) 20px 48px;
 }
 
 .cabecalho-topo {
@@ -325,7 +326,7 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
-.campo-descricao { flex: 1.4; }
+.campo-descricao { flex: 1; }
 .campo-data { flex: 1; }
 
 .botao-adicionar {
@@ -356,7 +357,8 @@ button {
    --------------------------------------------------------------- */
 .lista-lancamentos {
   flex: 1;
-  padding: 0 16px 24px;
+  /* respeita a barra inferior (home indicator) do iPhone */
+  padding: 0 16px calc(24px + env(safe-area-inset-bottom));
 }
 
 .lista-titulo {
