@@ -90,6 +90,12 @@
   const campoValor       = document.getElementById("campo-valor");
   const campoDescricao   = document.getElementById("campo-descricao");
   const campoCategoria   = document.getElementById("campo-categoria");
+  const novaCategoria    = document.getElementById("nova-categoria");
+  const novaCatEmoji     = document.getElementById("nova-cat-emoji");
+  const novaCatNome      = document.getElementById("nova-cat-nome");
+  const novaCatCor       = document.getElementById("nova-cat-cor");
+  const botaoCriarCat    = document.getElementById("criar-categoria");
+  const botaoCancelarCat = document.getElementById("cancelar-categoria");
   const campoData        = document.getElementById("campo-data");
   const statusLancamento = document.getElementById("status-lancamento");
   const lista            = document.getElementById("lista");
@@ -164,6 +170,48 @@
       opt.textContent = (c.icon ? c.icon + " " : "") + c.name;
       campoCategoria.appendChild(opt);
     }
+    // opção especial no fim: abre o mini-formulário de criação
+    const optNova = document.createElement("option");
+    optNova.value = "__nova__";
+    optNova.textContent = "➕ Nova categoria…";
+    campoCategoria.appendChild(optNova);
+
+    novaCategoria.hidden = true; // some ao trocar de tipo/recarregar
+  }
+
+  function esconderNovaCategoria() {
+    novaCategoria.hidden = true;
+    if (campoCategoria.value === "__nova__") campoCategoria.selectedIndex = 0;
+  }
+
+  async function criarCategoria() {
+    const nome = novaCatNome.value.trim();
+    if (!nome) {
+      definirStatusLancamento("Dê um nome à categoria.", "erro");
+      return;
+    }
+    const emoji = novaCatEmoji.value.trim() || "🏷️";
+    const cor = novaCatCor.value || "#6B33E0";
+
+    definirStatusLancamento("Criando categoria...", null);
+    // a categoria nasce com o tipo atual (Gasto/Entrada)
+    const { data, error } = await cliente
+      .from("categories")
+      .insert({ name: nome, kind: tipoSelecionado, color: cor, icon: emoji })
+      .select()
+      .single();
+
+    if (error) {
+      definirStatusLancamento("Erro ao criar categoria: " + error.message, "erro");
+      return;
+    }
+
+    novaCatNome.value = "";
+    novaCatEmoji.value = "";
+    novaCategoria.hidden = true;
+    await carregarCategorias();          // recarrega e repopula o seletor
+    if (data) campoCategoria.value = data.id; // já deixa a nova selecionada
+    definirStatusLancamento("", null);
   }
 
   // =====================================================================
@@ -256,6 +304,16 @@
     });
   });
 
+  // abre o mini-formulário quando escolhe "Nova categoria…"
+  campoCategoria.addEventListener("change", function () {
+    const querCriar = campoCategoria.value === "__nova__";
+    novaCategoria.hidden = !querCriar;
+    if (querCriar) novaCatNome.focus();
+  });
+
+  botaoCriarCat.addEventListener("click", criarCategoria);
+  botaoCancelarCat.addEventListener("click", esconderNovaCategoria);
+
   formLancamento.addEventListener("submit", async function (ev) {
     ev.preventDefault();
 
@@ -265,13 +323,19 @@
       return;
     }
 
+    // "__nova__" é a opção de criar categoria, não uma categoria de verdade
+    const categoriaId =
+      campoCategoria.value && campoCategoria.value !== "__nova__"
+        ? campoCategoria.value
+        : null;
+
     definirStatusLancamento("Salvando...", null);
     // user_id é preenchido pelo default auth.uid() da tabela — não enviamos aqui
     const { error } = await cliente.from("transactions").insert({
       kind: tipoSelecionado,
       amount_cents: centavos,
       description: campoDescricao.value.trim() || null,
-      category_id: campoCategoria.value || null,
+      category_id: categoriaId,
       occurred_on: campoData.value || hojeLocal(),
     });
 
