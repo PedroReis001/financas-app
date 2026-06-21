@@ -399,6 +399,9 @@ button {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  max-height: 168px;     /* ~3 linhas; rola se tiver mais */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .emoji-opt {
