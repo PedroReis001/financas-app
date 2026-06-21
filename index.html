@@ -62,10 +62,27 @@
       </div>
     </header>
 
+    <form id="form-lancamento" class="form-lancamento">
+      <div class="seletor-tipo">
+        <button type="button" class="tipo-botao tipo-ativo" data-kind="expense">− Gasto</button>
+        <button type="button" class="tipo-botao" data-kind="income">+ Entrada</button>
+      </div>
+      <div class="form-linha">
+        <input id="campo-valor" class="campo-valor" inputmode="decimal" placeholder="0,00" autocomplete="off" required>
+        <input id="campo-descricao" class="campo-descricao" placeholder="Descrição" autocomplete="off">
+      </div>
+      <div class="form-linha">
+        <input id="campo-data" class="campo-data" type="date" required>
+        <button type="submit" class="botao-adicionar">Adicionar</button>
+      </div>
+      <p id="status-lancamento" class="status-lancamento" role="status" aria-live="polite"></p>
+    </form>
+
     <section class="lista-lancamentos">
-      <div class="estado-vazio">
+      <ul id="lista" class="lista"></ul>
+      <div id="estado-vazio" class="estado-vazio">
         <p class="estado-vazio-titulo">Nenhum lançamento ainda</p>
-        <p class="estado-vazio-texto">Os lançamentos entram na próxima etapa.</p>
+        <p class="estado-vazio-texto">Adicione seu primeiro lançamento acima.</p>
       </div>
     </section>
   </main>

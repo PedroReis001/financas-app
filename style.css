@@ -217,9 +217,151 @@ button {
   letter-spacing: -0.5px;
 }
 
+/* ---------------------------------------------------------------
+   Formulário de lançamento
+   --------------------------------------------------------------- */
+.form-lancamento {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--paper-2);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.seletor-tipo {
+  display: flex;
+  gap: 8px;
+}
+
+.tipo-botao {
+  flex: 1;
+  min-height: 44px;
+  border: 1px solid var(--paper-2);
+  background: var(--paper);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.tipo-botao.tipo-ativo[data-kind="expense"] {
+  background: var(--brick);
+  border-color: var(--brick);
+  color: var(--paper);
+}
+
+.tipo-botao.tipo-ativo[data-kind="income"] {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--paper);
+}
+
+.form-linha {
+  display: flex;
+  gap: 8px;
+}
+
+.campo-valor,
+.campo-descricao,
+.campo-data {
+  font-family: inherit;
+  font-size: 16px; /* evita zoom automático no iOS */
+  padding: 12px;
+  min-height: 48px;
+  border: 1px solid var(--paper-2);
+  background: var(--paper);
+  border-radius: 10px;
+}
+
+.campo-valor {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.campo-descricao { flex: 1.4; }
+.campo-data { flex: 1; }
+
+.botao-adicionar {
+  flex: 1;
+  min-height: 48px;
+  border: none;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.botao-adicionar:active { opacity: 0.85; }
+
+.status-lancamento {
+  margin: 0;
+  font-size: 13px;
+  min-height: 16px;
+  color: var(--muted);
+}
+
+.status-lancamento[data-tipo="erro"] { color: var(--brick); }
+.status-lancamento[data-tipo="ok"]   { color: var(--green); }
+
+/* ---------------------------------------------------------------
+   Lista de lançamentos
+   --------------------------------------------------------------- */
 .lista-lancamentos {
   flex: 1;
   padding: 24px 20px;
+}
+
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--paper-2);
+}
+
+.item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-descricao {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.item-data {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.item-valor {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.item-valor.entrada { color: var(--green); }
+.item-valor.saida   { color: var(--brick); }
+
+.item-apagar {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  padding: 8px;
+  min-height: 44px;
+  min-width: 44px;
 }
 
 .estado-vazio {
