@@ -382,7 +382,6 @@ button {
   gap: 8px;
 }
 
-.nova-cat-emoji,
 .nova-cat-nome {
   font-family: inherit;
   font-size: 16px; /* evita zoom automático no iOS */
@@ -392,15 +391,33 @@ button {
   background: var(--branco);
   border-radius: 10px;
   min-width: 0;
+  flex: 1;
 }
 
-.nova-cat-emoji {
-  flex: 0 0 56px;
-  width: 56px;
-  text-align: center;
+/* paleta de emojis para tocar (mais fácil que digitar no celular) */
+.emoji-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-.nova-cat-nome { flex: 1; }
+.emoji-opt {
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+  line-height: 1;
+  border: 1px solid var(--linha);
+  background: var(--branco);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emoji-opt.emoji-ativo {
+  border-color: var(--roxo);
+  background: var(--roxo-claro);
+}
 
 .nova-cat-cor {
   flex: 0 0 52px;

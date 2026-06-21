@@ -91,7 +91,7 @@
   const campoDescricao   = document.getElementById("campo-descricao");
   const campoCategoria   = document.getElementById("campo-categoria");
   const novaCategoria    = document.getElementById("nova-categoria");
-  const novaCatEmoji     = document.getElementById("nova-cat-emoji");
+  const emojiBotoes      = document.querySelectorAll(".emoji-opt");
   const novaCatNome      = document.getElementById("nova-cat-nome");
   const novaCatCor       = document.getElementById("nova-cat-cor");
   const botaoCriarCat    = document.getElementById("criar-categoria");
@@ -104,6 +104,7 @@
 
   let tipoSelecionado = "expense";
   let categorias = [];
+  let emojiSelecionado = "🏷️";
 
   // Categorias padrão criadas na primeira vez (ícone = emoji, sem CDN).
   const CATEGORIAS_PADRAO = [
@@ -190,14 +191,13 @@
       definirStatusLancamento("Dê um nome à categoria.", "erro");
       return;
     }
-    const emoji = novaCatEmoji.value.trim() || "🏷️";
     const cor = novaCatCor.value || "#6B33E0";
 
     definirStatusLancamento("Criando categoria...", null);
     // a categoria nasce com o tipo atual (Gasto/Entrada)
     const { data, error } = await cliente
       .from("categories")
-      .insert({ name: nome, kind: tipoSelecionado, color: cor, icon: emoji })
+      .insert({ name: nome, kind: tipoSelecionado, color: cor, icon: emojiSelecionado })
       .select()
       .single();
 
@@ -207,7 +207,8 @@
     }
 
     novaCatNome.value = "";
-    novaCatEmoji.value = "";
+    emojiSelecionado = "🏷️";
+    emojiBotoes.forEach(function (b) { b.classList.remove("emoji-ativo"); });
     novaCategoria.hidden = true;
     await carregarCategorias();          // recarrega e repopula o seletor
     if (data) campoCategoria.value = data.id; // já deixa a nova selecionada
@@ -309,6 +310,14 @@
     const querCriar = campoCategoria.value === "__nova__";
     novaCategoria.hidden = !querCriar;
     if (querCriar) novaCatNome.focus();
+  });
+
+  // seleção do emoji por toque
+  emojiBotoes.forEach(function (botao) {
+    botao.addEventListener("click", function () {
+      emojiSelecionado = botao.dataset.emoji;
+      emojiBotoes.forEach(function (b) { b.classList.toggle("emoji-ativo", b === botao); });
+    });
   });
 
   botaoCriarCat.addEventListener("click", criarCategoria);
