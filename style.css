@@ -323,7 +323,7 @@ button {
 }
 
 .campo-valor {
-  flex: 1;
+  flex: 1.5;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
