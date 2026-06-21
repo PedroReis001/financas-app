@@ -10,7 +10,7 @@
 // continuar mostrando a versão antiga em cache por um bom tempo.
 // =====================================================================
 
-const CACHE_NAME = "financas-shell-v6";
+const CACHE_NAME = "financas-shell-v7";
 
 const ARQUIVOS_DO_APP = [
   "./",
@@ -48,22 +48,20 @@ self.addEventListener("fetch", (evento) => {
   const url = new URL(evento.request.url);
 
   // chamadas ao Supabase: sempre rede, nunca cache
-  if (url.hostname.includes("supabase.co")) {
-    return;
-  }
+  if (url.hostname.includes("supabase.co")) return;
 
-  // resto: cache primeiro, com a rede como reforço/atualização
+  // só GET entra no cache
+  if (evento.request.method !== "GET") return;
+
+  // REDE PRIMEIRO: quando online, sempre traz a versão mais nova e
+  // atualiza o cache; se a rede falhar (offline), cai pro cache.
   evento.respondWith(
-    caches.match(evento.request).then((respostaCache) => {
-      return (
-        respostaCache ||
-        fetch(evento.request).then((respostaRede) => {
-          return caches.open(CACHE_NAME).then((cache) => {
-            cache.put(evento.request, respostaRede.clone());
-            return respostaRede;
-          });
-        })
-      );
-    })
+    fetch(evento.request)
+      .then((respostaRede) => {
+        const copia = respostaRede.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(evento.request, copia));
+        return respostaRede;
+      })
+      .catch(() => caches.match(evento.request))
   );
 });
