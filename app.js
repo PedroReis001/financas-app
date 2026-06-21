@@ -1,76 +1,67 @@
-// app.js — VERSÃO DE DIAGNÓSTICO (mostra o erro na tela)
+// app.js — login por e-mail e senha + troca de telas
 
-function mostrarBanner(texto, cor) {
-  let b = document.getElementById("erro-debug");
-  if (!b) {
-    b = document.createElement("div");
-    b.id = "erro-debug";
-    b.style.cssText =
-      "position:fixed;top:0;left:0;right:0;z-index:9999;color:#fff;" +
-      "font:14px/1.4 system-ui;padding:12px;white-space:pre-wrap;";
-    document.body.appendChild(b);
+(function () {
+  const statusLogin = document.getElementById("status-login");
+
+  function definirStatus(texto, tipo) {
+    statusLogin.textContent = texto || "";
+    if (tipo) statusLogin.setAttribute("data-tipo", tipo);
+    else statusLogin.removeAttribute("data-tipo");
   }
-  b.style.background = cor || "#8C3B2E";
-  b.textContent = texto;
-}
 
-window.addEventListener("error", function (e) {
-  mostrarBanner("ERRO: " + (e.message || "?") + " @" + (e.filename || "") + ":" + (e.lineno || ""));
-});
-window.addEventListener("unhandledrejection", function (e) {
-  mostrarBanner("ERRO (promise): " + (e.reason && e.reason.message ? e.reason.message : e.reason));
-});
-
-try {
-  if (!window.APP_CONFIG) throw new Error("config.js não carregou (APP_CONFIG ausente)");
-  if (String(window.APP_CONFIG.SUPABASE_URL).includes("COLE_AQUI"))
-    throw new Error("config.js está com o texto de exemplo (COLE_AQUI)");
-  if (!window.supabase || typeof window.supabase.createClient !== "function")
-    throw new Error("biblioteca do Supabase não carregou (CDN não abriu)");
+  // Sem isto o resto quebra silenciosamente — avisa na própria tela de login
+  if (!window.APP_CONFIG) {
+    definirStatus("Erro: config.js não carregou.", "erro");
+    return;
+  }
+  if (!window.supabase || typeof window.supabase.createClient !== "function") {
+    definirStatus("Erro: biblioteca do Supabase não carregou (verifique a conexão).", "erro");
+    return;
+  }
 
   const cliente = window.supabase.createClient(
     window.APP_CONFIG.SUPABASE_URL,
-    window.APP_CONFIG.SUPABASE_ANON_KEY,
-    { auth: { detectSessionInUrl: true } }
+    window.APP_CONFIG.SUPABASE_ANON_KEY
   );
 
-  const telaLogin   = document.getElementById("tela-login");
-  const telaApp     = document.getElementById("tela-app");
-  const formLogin   = document.getElementById("form-login");
-  const campoEmail  = document.getElementById("email");
-  const statusLogin = document.getElementById("status-login");
-  const botaoSair   = document.getElementById("botao-sair");
+  const telaLogin  = document.getElementById("tela-login");
+  const telaApp    = document.getElementById("tela-app");
+  const formLogin  = document.getElementById("form-login");
+  const campoEmail = document.getElementById("email");
+  const campoSenha = document.getElementById("senha");
+  const botaoSair  = document.getElementById("botao-sair");
 
-  function mostrarTela(s) { telaLogin.hidden = Boolean(s); telaApp.hidden = !s; }
-  function definirStatus(t, tipo) {
-    statusLogin.textContent = t;
-    if (tipo) statusLogin.setAttribute("data-tipo", tipo);
-    else statusLogin.removeAttribute("data-tipo");
+  function mostrarTela(sessao) {
+    const logado = Boolean(sessao);
+    telaLogin.hidden = logado;
+    telaApp.hidden = !logado;
   }
 
   formLogin.addEventListener("submit", async function (ev) {
     ev.preventDefault();
     const email = campoEmail.value.trim();
-    if (!email) return;
-    definirStatus("Enviando link...", null);
-    const { error } = await cliente.auth.signInWithOtp({
-      email, options: { emailRedirectTo: window.location.href },
+    const senha = campoSenha.value;
+    if (!email || !senha) return;
+
+    definirStatus("Entrando...", null);
+    const { error } = await cliente.auth.signInWithPassword({
+      email,
+      password: senha,
     });
-    if (error) { definirStatus("Erro: " + error.message, "erro"); mostrarBanner("ENVIO FALHOU: " + error.message); return; }
-    definirStatus("Link enviado! Confira o e-mail (" + email + ").", "ok");
-    mostrarBanner("ENVIO OK: o Supabase aceitou. Veja e-mail/spam.", "#2F5D3A");
+
+    if (error) {
+      definirStatus("Não foi possível entrar: " + error.message, "erro");
+      return;
+    }
+
+    definirStatus("", null);
+    campoSenha.value = ""; // não deixa a senha parada no campo após entrar
   });
 
   botaoSair.addEventListener("click", function () { cliente.auth.signOut(); });
 
-  // onAuthStateChange já cobre tanto o retorno do magic link (SIGNED_IN)
-  // quanto sessões existentes (INITIAL_SESSION) — getSession() separado não é necessário
-  cliente.auth.onAuthStateChange(function (evento, s) {
-    mostrarBanner("AUTH: " + evento + " | sessão: " + (s ? "sim" : "não"), s ? "#2F5D3A" : "#8C3B2E");
-    mostrarTela(s);
-  });
-
-  mostrarBanner("OK: app carregou e o botão está ligado.", "#2F5D3A");
-} catch (err) {
-  mostrarBanner("FALHA: " + (err && err.message ? err.message : err));
-}
+  // onAuthStateChange cobre login, logout e a sessão inicial (já guardada
+  // no navegador) — por isso não é preciso pedir login a cada visita
+  cliente.auth.onAuthStateChange(function (_evento, sessao) { mostrarTela(sessao); });
+  cliente.auth.getSession().then(function (r) { mostrarTela(r.data.session); });
+})();
