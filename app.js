@@ -84,6 +84,8 @@
   const botaoSair   = document.getElementById("botao-sair");
 
   const saldoValor       = document.getElementById("saldo-valor");
+  const totalReceitas    = document.getElementById("total-receitas");
+  const totalDespesas    = document.getElementById("total-despesas");
   const formLancamento   = document.getElementById("form-lancamento");
   const campoValor       = document.getElementById("campo-valor");
   const campoDescricao   = document.getElementById("campo-descricao");
@@ -120,11 +122,15 @@
   function renderizar(transacoes) {
     lista.innerHTML = "";
 
-    let saldo = 0;
+    let receitas = 0;
+    let despesas = 0;
     for (const t of transacoes) {
-      saldo += t.kind === "income" ? t.amount_cents : -t.amount_cents;
+      if (t.kind === "income") receitas += t.amount_cents;
+      else despesas += t.amount_cents;
     }
-    saldoValor.textContent = "R$ " + formatarReais(saldo);
+    saldoValor.textContent = "R$ " + formatarReais(receitas - despesas);
+    totalReceitas.textContent = formatarReais(receitas);
+    totalDespesas.textContent = formatarReais(despesas);
 
     estadoVazio.hidden = transacoes.length > 0;
 
@@ -133,6 +139,9 @@
       const li = document.createElement("li");
       li.className = "item";
       li.innerHTML =
+        '<span class="item-icone ' + (entrada ? "entrada" : "saida") + '">' +
+          (entrada ? "↓" : "↑") +
+        '</span>' +
         '<div class="item-info">' +
           '<div class="item-descricao"></div>' +
           '<div class="item-data"></div>' +

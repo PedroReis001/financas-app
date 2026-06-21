@@ -10,7 +10,7 @@
 // continuar mostrando a versão antiga em cache por um bom tempo.
 // =====================================================================
 
-const CACHE_NAME = "financas-shell-v5";
+const CACHE_NAME = "financas-shell-v6";
 
 const ARQUIVOS_DO_APP = [
   "./",

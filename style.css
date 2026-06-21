@@ -1,26 +1,28 @@
 /* ===================================================================
-   Token system — "ficha de lançamento"
-   A ideia: números financeiros merecem o mesmo tratamento de um
-   recibo — alinhados, monoespaçados, sem ambiguidade. O resto da
-   interface fica quieto para não competir com os números.
+   Token system — visual estilo Mobills (roxo), carteira única.
+   Cartões brancos sobre fundo cinza claro; números monoespaçados.
    =================================================================== */
 
 :root {
   /* cor */
-  --ink:      #1C1B19;   /* texto principal, fundo do cabeçalho */
-  --paper:    #FAF7F2;   /* fundo da página */
-  --paper-2:  #EFE8DB;   /* cartões, divisores */
-  --green:    #2F5D3A;   /* entradas, ações positivas */
-  --brick:    #8C3B2E;   /* saídas, alertas */
-  --muted:    #746C61;   /* texto secundário */
+  --roxo:       #6B33E0;   /* cabeçalho, destaque principal */
+  --roxo-forte: #7C3AED;   /* botão de ação (FAB), ênfase */
+  --roxo-claro: #EFE9FB;   /* fundo de ícone/realce suave */
+  --ink:        #1C2030;   /* texto principal */
+  --paper:      #F4F5F7;   /* fundo da página (cinza claro) */
+  --branco:     #FFFFFF;   /* cartões */
+  --linha:      #EEEFF2;   /* divisores e bordas */
+  --green:      #1B873F;   /* entradas / positivo */
+  --green-bg:   #E6F4EA;   /* fundo do ícone de entrada */
+  --brick:      #C0322B;   /* saídas / negativo */
+  --brick-bg:   #FCE8E8;   /* fundo do ícone de saída */
+  --muted:      #6B7280;   /* texto secundário */
 
-  /* tipografia: fontes do sistema — funcionam offline, sem depender
-     de CDN externo (importante para um PWA que promete uso offline) */
+  /* tipografia: fontes do sistema — funcionam offline, sem CDN */
   --font-ui:   system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "DejaVu Sans Mono", "SFMono-Regular", Menlo, Consolas, monospace;
 
-  /* espaçamento */
-  --r: 14px;
+  --r: 16px;
 }
 
 * { box-sizing: border-box; }
@@ -50,11 +52,8 @@ body {
   flex-direction: column;
 }
 
-/* ---------------------------------------------------------------
-   Acessibilidade: foco visível sempre, animação respeita preferência
-   --------------------------------------------------------------- */
 :focus-visible {
-  outline: 2px solid var(--green);
+  outline: 2px solid var(--roxo);
   outline-offset: 2px;
 }
 
@@ -79,9 +78,10 @@ button {
 
 .cartao-login {
   width: 100%;
-  background: var(--paper-2);
+  background: var(--branco);
   border-radius: var(--r);
   padding: 32px 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 .marca {
@@ -95,8 +95,8 @@ button {
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: 22px;
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--roxo);
+  color: #fff;
   padding: 4px 8px;
   border-radius: 6px;
 }
@@ -121,8 +121,8 @@ button {
   font-family: inherit;
   font-size: 16px; /* evita zoom automático no iOS */
   padding: 14px;
-  border: 1px solid var(--paper-2);
-  background: var(--paper);
+  border: 1px solid var(--linha);
+  background: var(--branco);
   border-radius: 10px;
   outline-offset: 2px;
 }
@@ -133,15 +133,13 @@ button {
   min-height: 48px;
   border: none;
   border-radius: 10px;
-  background: var(--green);
-  color: var(--paper);
+  background: var(--roxo);
+  color: #fff;
   font-size: 15px;
   font-weight: 600;
 }
 
-.form-login button:active {
-  opacity: 0.85;
-}
+.form-login button:active { opacity: 0.85; }
 
 .status-login {
   margin: 16px 0 0;
@@ -150,63 +148,57 @@ button {
   min-height: 20px;
 }
 
-.status-login[data-tipo="erro"] {
-  color: var(--brick);
-}
-
-.status-login[data-tipo="ok"] {
-  color: var(--green);
-}
+.status-login[data-tipo="erro"] { color: var(--brick); }
+.status-login[data-tipo="ok"]   { color: var(--green); }
 
 /* ===================================================================
-   App principal
+   App — cabeçalho roxo
    =================================================================== */
 
+#tela-app { background: var(--paper); }
+
 .cabecalho {
-  background: var(--ink);
-  color: var(--paper);
-  padding: 20px 20px 24px;
-  /* borda "picotada", lembrando o destacamento de um recibo */
-  border-bottom: 2px dashed var(--paper-2);
+  background: var(--roxo);
+  color: #fff;
+  padding: 20px 20px 48px;
 }
 
 .cabecalho-topo {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 .marca-cifra-pequena {
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: 14px;
-  opacity: 0.7;
+  opacity: 0.85;
 }
 
 .botao-texto {
   background: none;
   border: none;
-  color: var(--paper);
-  opacity: 0.7;
+  color: #fff;
+  opacity: 0.85;
   font-size: 14px;
   padding: 8px;
 }
 
-.botao-texto:hover,
-.botao-texto:active {
-  opacity: 1;
-}
+.botao-texto:active { opacity: 1; }
 
 .saldo {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  align-items: center;
+  text-align: center;
 }
 
 .saldo-rotulo {
   font-size: 13px;
-  opacity: 0.65;
+  opacity: 0.85;
 }
 
 .saldo-valor {
@@ -218,11 +210,65 @@ button {
 }
 
 /* ---------------------------------------------------------------
-   Formulário de lançamento
+   Cartões de resumo (Receitas / Despesas) — sobrepõem o cabeçalho
+   --------------------------------------------------------------- */
+.resumo {
+  display: flex;
+  gap: 12px;
+  padding: 0 16px;
+  margin-top: -32px;
+}
+
+.resumo-card {
+  flex: 1;
+  background: var(--branco);
+  border-radius: var(--r);
+  padding: 14px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.07);
+}
+
+.resumo-rotulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.resumo-icone {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.resumo-icone.entrada { background: var(--green-bg); color: var(--green); }
+.resumo-icone.saida   { background: var(--brick-bg); color: var(--brick); }
+
+.resumo-valor {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 17px;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.resumo-valor.entrada { color: var(--green); }
+.resumo-valor.saida   { color: var(--brick); }
+
+/* ---------------------------------------------------------------
+   Formulário de lançamento — cartão branco
    --------------------------------------------------------------- */
 .form-lancamento {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--paper-2);
+  background: var(--branco);
+  border-radius: var(--r);
+  margin: 16px;
+  padding: 16px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.07);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -236,8 +282,8 @@ button {
 .tipo-botao {
   flex: 1;
   min-height: 44px;
-  border: 1px solid var(--paper-2);
-  background: var(--paper);
+  border: 1px solid var(--linha);
+  background: var(--branco);
   border-radius: 10px;
   font-size: 14px;
   font-weight: 600;
@@ -247,13 +293,13 @@ button {
 .tipo-botao.tipo-ativo[data-kind="expense"] {
   background: var(--brick);
   border-color: var(--brick);
-  color: var(--paper);
+  color: #fff;
 }
 
 .tipo-botao.tipo-ativo[data-kind="income"] {
   background: var(--green);
   border-color: var(--green);
-  color: var(--paper);
+  color: #fff;
 }
 
 .form-linha {
@@ -268,8 +314,8 @@ button {
   font-size: 16px; /* evita zoom automático no iOS */
   padding: 12px;
   min-height: 48px;
-  border: 1px solid var(--paper-2);
-  background: var(--paper);
+  border: 1px solid var(--linha);
+  background: var(--branco);
   border-radius: 10px;
 }
 
@@ -287,8 +333,8 @@ button {
   min-height: 48px;
   border: none;
   border-radius: 10px;
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--roxo-forte);
+  color: #fff;
   font-size: 15px;
   font-weight: 600;
 }
@@ -306,26 +352,54 @@ button {
 .status-lancamento[data-tipo="ok"]   { color: var(--green); }
 
 /* ---------------------------------------------------------------
-   Lista de lançamentos
+   Lista de lançamentos — cartão branco
    --------------------------------------------------------------- */
 .lista-lancamentos {
   flex: 1;
-  padding: 24px 20px;
+  padding: 0 16px 24px;
+}
+
+.lista-titulo {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 4px 4px 8px;
 }
 
 .lista {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 16px;
+  background: var(--branco);
+  border-radius: var(--r);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.07);
 }
+
+.lista:empty { display: none; }
 
 .item {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 14px 0;
-  border-bottom: 1px solid var(--paper-2);
+  border-bottom: 1px solid var(--linha);
 }
+
+.item:last-child { border-bottom: none; }
+
+.item-icone {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.item-icone.entrada { background: var(--green-bg); color: var(--green); }
+.item-icone.saida   { background: var(--brick-bg); color: var(--brick); }
 
 .item-info {
   flex: 1;
@@ -345,7 +419,7 @@ button {
 .item-valor {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   white-space: nowrap;
 }

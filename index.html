@@ -62,6 +62,17 @@
       </div>
     </header>
 
+    <div class="resumo">
+      <div class="resumo-card">
+        <div class="resumo-rotulo"><span class="resumo-icone entrada">↓</span> Receitas</div>
+        <div id="total-receitas" class="resumo-valor entrada">0,00</div>
+      </div>
+      <div class="resumo-card">
+        <div class="resumo-rotulo"><span class="resumo-icone saida">↑</span> Despesas</div>
+        <div id="total-despesas" class="resumo-valor saida">0,00</div>
+      </div>
+    </div>
+
     <form id="form-lancamento" class="form-lancamento">
       <div class="seletor-tipo">
         <button type="button" class="tipo-botao tipo-ativo" data-kind="expense">− Gasto</button>
@@ -79,6 +90,7 @@
     </form>
 
     <section class="lista-lancamentos">
+      <h2 class="lista-titulo">Lançamentos</h2>
       <ul id="lista" class="lista"></ul>
       <div id="estado-vazio" class="estado-vazio">
         <p class="estado-vazio-titulo">Nenhum lançamento ainda</p>
